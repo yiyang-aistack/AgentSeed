@@ -1,0 +1,65 @@
+# AgentSeed — uv package management
+# Repository layout：
+#   backend/    Python （LangGraph API Server + frameworks）
+#   frontend/   Next.js 16 frontend chatUI（web-based UI）
+# Usage：
+#   uv sync                # install package and dependencies + uv.lock
+#   uv run backend/main.py # run LangGraph API server in-memory mode locally
+[project]
+name = "agentseed"
+version = "0.1.0"
+description = "LangGraph framework with multi-provider LLM factory and Hermes Agent bridge, and bundled chat UI"
+readme = "README.md"
+requires-python = ">=3.12"
+# direct dependencies required by the project
+dependencies = [
+    "colorlog>=6.12.0",        # backend/src/core/logConfig.py
+    "deepagents>=0.7.14",
+    "langchain>=1.3.14",       # backend/src/agents/samples/*.py: create_agent
+    "langchain-core>=1.5.5",   # langchain_core.tools
+    "langchain-mcp-adapters>=0.3.2",
+    "langchain-ollama>=1.1.0", # ChatOllama
+    "langchain-openai>=1.6.2",  # backend/src/core/llm.py: ChatOpenAI (LLM_PROVIDER=openai)
+    "langgraph>=1.2.11",       # backend/src/agents/samples/reflectAgent.py: StateGraph
+    "langgraph-api>=0.12.2",   # uvicorn.run("langgraph_api.server:app")
+    "langgraph-runtime-inmem>=0.32.2",  # LANGGRAPH_RUNTIME_EDITION=inmem
+    "python-dotenv>=1.2.2",    # backend/main.py: load .env
+    "pyyaml>=6.0.3",           # backend/main.py: parse agentConfig.yaml
+    "uvicorn>=0.52.1",         # backend/main.py: kickoff server
+    "watchfiles>=1.2.0",       # backend/main.py: reload=True — reload_excludes need uvicorn's watchfiles reloader
+]
+
+[dependency-groups]
+dev = ["pytest>=8.3", "ruff>=0.15"]
+
+[tool.uv]
+# this project is a script, not a package
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A"]
+
+[tool.ruff.lint.per-file-ignores]
+# Launcher bootstrap: UTF-8 mode + interpreter guard must run BEFORE third-party imports
+# (uvicorn / langgraph_api read config from the environment at import time), so E402 is
+# the intended ordering, not a mistake.
+"backend/main.py" = ["E402"]
+# Graph-spec modules deliberately use camelCase to mirror LangGraph's own sample naming
+# (reflectAgent, tsAgent, ...). Renaming would diverge from the upstream examples.
+"backend/src/agents/samples/*.py" = ["N999"]
+# getFilesToDelete()/doRollover() override logging.handlers.TimedRotatingFileHandler and must
+# keep the parent's exact names; the module keeps the repo's camelCase (see logConfig import).
+"backend/src/core/logConfig.py" = ["N999", "N802"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.pytest.ini_options]
+# Tests live under backend/src/tests/ and import framework code as `src.*`,
+# so `backend` must be on sys.path (the same layout main.py establishes).
+testpaths = ["backend/src/tests"]
+pythonpath = ["backend"]

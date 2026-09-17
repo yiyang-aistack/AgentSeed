@@ -1,0 +1,55 @@
+# =============================================================================
+# MCP servers — declarative registry (framework kernel)
+# -----------------------------------------------------------------------------
+# Declare external MCP capabilities to be accessed by agent:
+#     from src.capabilities.mcp import tools
+#     tool_list = tools("<server_name>")
+# Returns a list of BaseTool objects.
+#
+# Fields:
+#   transport      : stdio | streamable-http | sse
+#   command/args   : (stdio) command to start MCP server subprocess
+#   url            : (streamable-http / sse) remote endpoint
+#   headers        : optional static request headers (placeholder; placeholder keys from .env)
+#   enabled        : false (default) = register only
+#
+# Any value may embed ``${VAR}``, expanded from the process environment by
+# manager.py — i.e. from <repo>/.env, so no secret is ever written in this file.
+# A placeholder that resolves empty raises MCPConfigError before any connection
+# is attempted, naming the missing variable.
+# =============================================================================
+
+servers:
+  # Tavily — hosted remote MCP server: web search / extract / map / crawl
+  # (tools: tavily-search, tavily-extract, tavily-map, tavily-crawl).
+  # Remote streamable-http only: no Node.js or local subprocess is started, the
+  # endpoint https://mcp.tavily.com/mcp/ is reached over HTTPS.
+  #
+  # The key is sent as a bearer header rather than Tavily's alternative
+  # ?tavilyApiKey= query parameter, so it cannot leak into a URL that ends up in
+  # a log line or an exception message. Consumed by
+  # agents/samples/mcpAgent.py (graph ``mcp_agent``); needs TAVILY_API_KEY in
+  # .env — copy the placeholder from .env.example and add your own key.
+  #
+  # If Tavily should ever reject the header form, the documented alternative
+  # needs no code change — drop `headers` and put the key in the URL instead:
+  #   url: https://mcp.tavily.com/mcp/?tavilyApiKey=${TAVILY_API_KEY}
+  tavily:
+    transport: streamable-http
+    url: https://mcp.tavily.com/mcp/
+    headers:
+      Authorization: "Bearer ${TAVILY_API_KEY}"
+    enabled: true
+
+  # Example: Local filesystem MCP (stdio — starts the server as a subprocess)
+  filesystem:
+    transport: stdio
+    command: npx
+    args: ["-y", "@modelcontextprotocol/server-filesystem", "/tmp/scratch"]
+    enabled: false
+
+  # Sample: Remote http MCP(connect to gateway to enable)
+  # github:
+  #   transport: streamable-http
+  #   url: https://api.githubcopilot.com/mcp/
+  #   enabled: false

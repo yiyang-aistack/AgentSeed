@@ -1,0 +1,84 @@
+# AgentSeed CI — lint + format + test on every push and pull request.
+#
+# Backend job uses uv (pyproject.toml + uv.lock) to reproduce the exact environment:
+#   - uv lock --check — the lockfile must still satisfy pyproject.toml (`--frozen` alone does not check this)
+#   - uv sync --locked — install strictly from uv.lock, never re-resolving behind your back
+#   - ruff check   — lint (E/F/W/I/N/UP/B/A, see [tool.ruff.lint])
+#   - ruff format  — code style (quote-style "double", line-length 100)
+#   - pytest       — backend/src/tests/ (no network / no LLM needed)
+#
+# Frontend job pins the same Node major the README documents (>= 20) and uses the
+# committed yarn.lock (`yarn install --frozen-lockfile` already fails when
+# package.json and yarn.lock disagree — the Python-side equivalent of that check is
+# `uv lock --check` above):
+#   - eslint       — `yarn lint`
+#   - tsc --noEmit — type check (no build artifacts needed)
+# Prettier is intentionally NOT enforced here: the repo still carries ~23 files
+# that predate the current prettier config, and a formatting gate would fail for
+# reasons unrelated to the change under review.
+
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # `--frozen` only means "do not touch uv.lock": it does NOT verify that the
+      # lockfile still satisfies pyproject.toml. Bumping a constraint without
+      # re-running `uv lock` would therefore keep CI green while installing the OLD
+      # versions — the "passes in CI, differs locally" trap. `uv lock --check`
+      # asserts the lockfile is up to date (non-zero exit otherwise, verified locally
+      # by injecting a drifted pyproject.toml), and `uv sync --locked` refuses to
+      # install from a drifted lock.
+      - name: Verify uv.lock is in sync with pyproject.toml
+        run: uv lock --check
+
+      - name: Install dependencies (from uv.lock)
+        run: uv sync --locked
+
+      - name: Lint
+        run: uv run ruff check backend
+
+      - name: Format check
+        run: uv run ruff format --check backend
+
+      - name: Test
+        run: uv run pytest
+
+  frontend-lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --non-interactive
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Type check
+        run: npx tsc --noEmit

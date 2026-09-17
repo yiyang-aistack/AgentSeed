@@ -1,0 +1,66 @@
+# ---------------------------------------------------------------------------
+# AgentSeed graph registry — consumed ONLY by backend/main.py, which reads the
+# ``graphs`` mapping below and exports it as the LANGSERVE_GRAPHS env var that
+# langgraph_api actually uses.
+#
+# Graph paths are import paths, NOT file paths: they resolve against
+# ``backend/src`` (put on sys.path by backend/main.py), so ``agents.samples.
+# localAgent:test_agent`` means backend/src/agents/samples/localAgent.py.
+# Framework modules themselves import ``src.*``, which is why ``backend`` is on
+# sys.path as well.
+#
+# Keys like ``dependencies`` / ``env`` belong to langgraph.json and are
+# intentionally NOT used here (the langgraph CLI is not part of this project's
+# startup path), so they have been removed to avoid the false impression that
+# this file is a langgraph.json.
+#
+# This file stays at the repository root on purpose: it is the business-level
+# config next to .env, and it is shared by the backend and future tooling.
+# ---------------------------------------------------------------------------
+
+graphs:
+  # Local Test agent: rebuilt single-shot tool agent (framework sample).
+  # NOTE: every graph below MUST be a real module-level attribute, because
+  # langgraph_api resolves graphs via `module.__dict__[variable]`.
+  test_agent:
+    path: agents.samples.localAgent:test_agent
+
+  # Second airy create_agent sample (framework demo for multi-agent setup).
+  agent2:
+    path: agents.samples.tsAgent:ts_agent
+
+  # StateGraph demo: iterate a one-line catchphrase until keyword/attempt cap.
+  reflect_agent:
+    path: agents.samples.reflectAgent:reflect_agent
+
+  # Business-line workflow demo: compose shared agents/capabilities/common kernel.
+  testcase_agent:
+    path: workflows.testcase:testcase_agent
+
+  # Skill demo: agent whose expertise is a skill LIBRARY on disk rather than
+  # inline prompt text. The scenario skills live in src/workspace/testcase/skills/
+  # and reach the model by progressive disclosure (SkillsMiddleware shows only
+  # name + description; the body is read on demand), so adding a directory adds a
+  # skill with no Python change. The always-on review_policy is still inlined via
+  # src.capabilities.skills. Distinct from testcase_agent, a business-line
+  # delivery, which inlines capabilities/skills/entries/functional_testcase.md.
+  # Light and heavy skill sets
+  skill_testcase_agent_local_getText:
+    path: agents.samples.skillAgent_ts:skill_testcase_agent
+
+  skill_testcase_agent_local_skillMiddleware:
+    path: agents.samples.skillAgent_testcase:skill_testcase_agent
+
+  # MCP demo: LangChain agent whose tools come from an external MCP server.
+  # The server itself is declared in backend/src/capabilities/mcp/servers.yaml
+  # (tavily = Tavily's hosted remote MCP); TAVILY_API_KEY comes from .env.
+  # Unlike hermes_agent this graph still starts when unconfigured — it just logs
+  # an error and runs without the MCP tools.
+  mcp_agent:
+    path: agents.samples.mcpAgent:mcp_agent
+
+  # HermesAgent Integration:.
+  hermes_agent:
+    path: agents.samples.hermesAgent:hermes
+
+

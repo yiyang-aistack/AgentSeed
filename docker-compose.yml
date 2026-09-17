@@ -1,0 +1,66 @@
+# AgentSeed backend — one-command startup: `docker compose up -d`
+#
+# Everything the server needs to boot is declared under `environment:` below, so
+# the demo starts with zero local config. Real secrets (LLM API keys, Hermes
+# token) go in a `.env` next to this file — see .env.example — and are layered on
+# top via `env_file` (environment: always wins, so HOST stays 0.0.0.0).
+services:
+  agentseed:
+    build: .
+    image: agentseed:latest
+    container_name: agentseed
+    ports:
+      - "2026:2026"
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "2026"
+
+      # --- LLM (default: local Ollama on the host machine) ---
+      LLM_PROVIDER: "local"
+      OLLAMA_BASE_URL: "http://host.docker.internal:11434"
+      OLLAMA_MODEL: "qwen2.5:7b"
+      OLLAMA_TEMPERATURE: "0.2"
+
+      # --- LangGraph in-memory runtime (non-secret, stable config) ---
+      LANGGRAPH_RUNTIME_EDITION: "inmem"
+      DATABASE_URI: ":memory:"
+      REDIS_URI: "fake"
+      MIGRATIONS_PATH: "__inmem"
+      LANGGRAPH_DISABLE_FILE_PERSISTENCE: "false"
+      LANGGRAPH_ALLOW_BLOCKING: "true"
+      ALLOW_PRIVATE_NETWORK: "true"
+      LANGSMITH_LANGGRAPH_API_VARIANT: "local_dev"
+      N_JOBS_PER_WORKER: "1"
+
+      # --- logging ---
+      LOG_LEVEL: "INFO"
+      LOG_DIR: "./logs"
+
+      # --- Hermes (agentConfig.yaml ships with hermes_agent enabled; the module
+      #     requires these four at import time or the server refuses to start).
+      #     These are PLACEHOLDERS so the demo boots: invoking the hermes_agent
+      #     graph still needs a real Hermes Agent reachable at HERMES_BASE_URL.
+      #     Set real values via .env (env_file below) to actually use Hermes. ---
+      HERMES_BASE_URL: "http://127.0.0.1:8642"
+      API_SERVER_KEY: "sk-placeholder-not-a-real-key"
+      HERMES_MODEL: "hermes-agent"
+      HERMES_TIMEOUT: "600"
+
+    # Optional: load your real .env (LLM keys, Hermes, ...) on top of the above.
+    # `required: false` keeps the demo bootable when no .env exists yet.
+    env_file:
+      - path: .env
+        required: false
+
+    volumes:
+      - agentseed_logs:/app/logs
+
+    # Lets the container reach a host-machine Ollama via host.docker.internal.
+    # Docker Desktop does this automatically; `host-gateway` covers Linux.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    restart: unless-stopped
+
+volumes:
+  agentseed_logs:

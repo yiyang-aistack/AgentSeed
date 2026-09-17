@@ -1,0 +1,16 @@
+# Normalise line endings: text is stored with LF in the repository, and checked
+# out with the platform default (CRLF on Windows) unless the file says otherwise.
+* text=auto
+
+# Shell / CI entrypoints must keep LF even on Windows checkouts.
+*.sh text eol=lf
+Dockerfile text eol=lf
+
+# Binary assets - never touch these.
+*.ico binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.pdf binary

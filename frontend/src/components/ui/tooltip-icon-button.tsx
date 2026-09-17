@@ -1,0 +1,50 @@
+/**
+ * Copyright (c) 2023-2026 JunSu - AI
+ * SPDX-License-Identifier: MIT
+ *
+ * Licensed under the MIT License; see the LICENSE file at the repository root.
+ * Based on langchain-ai/deep-agents-ui (MIT, Copyright (c) 2025 LangChain).
+ */
+
+import React from "react";
+import { Button } from "./button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./tooltip";
+
+interface TooltipIconButtonProps {
+  icon: React.ReactNode;
+  onClick: () => void;
+  tooltip: string;
+  disabled?: boolean;
+}
+
+export function TooltipIconButton({
+  icon,
+  onClick,
+  tooltip,
+  disabled,
+}: TooltipIconButtonProps) {
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClick}
+            disabled={disabled}
+          >
+            {icon}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{tooltip}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}

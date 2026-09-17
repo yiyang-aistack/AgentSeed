@@ -1,0 +1,41 @@
+# ==== apikey and local config ====
+# .env declare your API_key , cannot be committed
+.env
+.env.*
+# .env.example as public template as refernece
+!.env.example
+
+# ==== Python: cache and virtual environment (backend/ and any subdirectories) ====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ==== LangGraph runtime data (repository root) ====
+.langgraph_api/
+
+# ==== runtime logs (repository root: logs/agentseed.log, rotated daily) ====
+logs/
+*.log
+
+# ==== frontend build artifacts (frontend/.gitignore is overwritten, fallback) ====
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts
+
+# ==== Claude Code local settings (not shared) ====
+.claude/
+
+# ==== tool caches ====
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# ==== IDE / system ====
+.idea/
+.vscode/
+.DS_Store

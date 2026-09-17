@@ -1,0 +1,37 @@
+# ==== Version control & CI ====
+.git/
+.github/
+.gitlab-ci.yml
+
+# ==== Secrets — never bake .env into an image ====
+.env
+.env.*
+
+# ==== Python runtime artifacts ====
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+
+# ==== LangGraph runtime state ====
+.langgraph_api/
+
+# ==== Runtime logs ====
+logs/
+*.log
+
+# ==== Frontend (Next.js) — not part of the backend image ====
+frontend/
+
+# ==== Docs / assets — keep the image lean ====
+assets/
+*.md
+
+# ==== IDE / OS / local tooling ====
+.idea/
+.vscode/
+.claude/
+.DS_Store
