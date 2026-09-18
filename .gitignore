@@ -10,7 +10,14 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .venv/
+.venv.*
 venv/
+
+# ==== Python test coverage ====
+.coverage
+coverage/
+coverage.xml
+htmlcov/
 
 # ==== LangGraph runtime data (repository root) ====
 .langgraph_api/
@@ -19,13 +26,16 @@ venv/
 logs/
 *.log
 
-# ==== frontend build artifacts (frontend/.gitignore is overwritten, fallback) ====
-frontend/node_modules/
+# ==== Node.js / Frontend (any node_modules/ anywhere in the repo) ====
+node_modules/
+
+# ==== frontend build artifacts (explicit, in case frontend/.gitignore exists) ====
 frontend/.next/
 frontend/out/
 frontend/build/
 frontend/*.tsbuildinfo
 frontend/next-env.d.ts
+.turbo/
 
 # ==== Claude Code local settings (not shared) ====
 .claude/
@@ -39,3 +49,13 @@ frontend/next-env.d.ts
 .idea/
 .vscode/
 .DS_Store
+Thumbs.db
+ehthumbs.db
+
+# ==== editor / OS temp files ====
+*.bak
+*.orig
+*.swp
+*.swo
+*~
+*.tmp
