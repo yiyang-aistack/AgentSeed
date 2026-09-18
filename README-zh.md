@@ -8,7 +8,9 @@
 
 AgentSeed 的差异化亮点：Hermes 桥接与双协议兼容。GitHub 上同类 Agent 框架普遍仅支持独立 LLM 循环或 LangGraph 单一链路；AgentSeed 支持对接客户现存 HermesAgent，无需推倒重建原有智能体资产，形成不可替代的技术护城河
 
-![AgentSeed](assets/agentSeed.webp)
+<p align="center">
+  <img src="https://github.com/yiyang-aistack/assets/blob/main/AgentSeed/AgentSeed_demo.gif?raw=true" alt="AgentSeed" />
+</p>
 
 [English](README.md) · [简体中文](README-zh.md)
 

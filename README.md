@@ -16,7 +16,7 @@
 AgentSeed differentiator: Hermes bridging and dual-protocol compatibility. Most open-source agent frameworks on GitHub only run standalone LLM loops or exclusively support LangGraph. AgentSeed can connect to clients' existing HermesAgent, eliminating the need to rebuild legacy agent assets from scratch and building an irreplaceable technical moat.
 
 <p align="center">
-  <img src="./assets/AgentSeed_demo.gif" alt="AgentSeed" />
+  <img src="https://github.com/yiyang-aistack/assets/blob/main/AgentSeed/AgentSeed_demo.gif?raw=true" alt="AgentSeed" />
 </p>
 
 [English](README.md) · [简体中文](README-zh.md)
